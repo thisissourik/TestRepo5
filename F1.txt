@@ -1,2 +1,4 @@
 L1 inserted remote
 L2 inserted remote
+L1 inserted local
+
