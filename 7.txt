@@ -1,0 +1,60 @@
+import java.io.*;
+import java.net.*;
+
+ class ServerSide {
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(5000);
+        
+        while (true) {
+            Socket socket = serverSocket.accept();
+
+            // Readfile name from client
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String fileName = in.readLine();
+
+            // Prepare to send file over
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+            // Checking if file exists and send content
+            File file = new File(fileName);
+            if (file.exists()) {
+                BufferedReader fileReader = new BufferedReader(new FileReader(file));
+                String line;
+                while ((line = fileReader.readLine()) != null)
+                    out.println(line);
+                fileReader.close();
+            } else {
+                out.println("Error");
+            }
+            socket.close();
+        }
+    }
+}
+
+// import java.io.*;
+// import java.net.*;
+
+ class ClientSide {
+    public static void main(String[] args) throws IOException {
+        Socket socket = new Socket("localhost", 5000);
+
+        // Ask user for filename
+        BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Enter filename ");
+        String fileName = read.readLine();
+
+        // Sending filename to server
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        out.println(fileName);
+
+        // Receiving file content
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        // Receive and display file content
+        String response;
+        while ((response = in.readLine()) != null) {
+            System.out.println(response);
+        }
+
+    }
+}
