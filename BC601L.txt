@@ -1,0 +1,687 @@
+/*========================================================
+MICROCONTROLLER AND EMBEDDED SYSTEMS LAB
+ALL 10 PROGRAMS - ARM7 LPC2148
+========================================================*/
+
+
+/*========================================================
+1) MULTIPLY TWO 16-BIT NUMBERS
+========================================================*/
+
+AREA MULTIPLY, CODE, READONLY
+ENTRY
+
+START
+    MOV R1,#20
+    MOV R2,#220
+    MUL R3,R1,R2
+
+    NOP
+    NOP
+    NOP
+
+END
+
+
+/*========================================================
+2) SUM OF FIRST 10 INTEGER NUMBERS
+========================================================*/
+
+AREA SUM, CODE, READONLY
+ENTRY
+
+    MOV R1,#10
+    MOV R2,#0
+
+LOOP
+    ADD R2,R2,R1
+    SUBS R1,R1,#1
+    BNE LOOP
+
+BACK
+    B BACK
+
+END
+
+
+/*========================================================
+3) FACTORIAL OF A NUMBER
+========================================================*/
+
+AREA FACTORIAL, CODE, READONLY
+ENTRY
+
+START1
+    MOV R0,#7
+    MOV R1,R0
+
+FACT
+    SUBS R1,R1,#1
+    MUL R3,R0,R1
+    MOV R0,R3
+    CMP R1,#1
+    BNE FACT
+
+    NOP
+    NOP
+    NOP
+
+END
+
+
+/*========================================================
+4) ADD ARRAY OF 16-BIT NUMBERS
+========================================================*/
+
+AREA ADDITION, CODE, READONLY
+ENTRY
+
+START2
+    MOV R5,#6
+    MOV R0,#0
+    LDR R1,=VALUE1
+
+LOOP1
+    LDRH R3,[R1],#2
+    ADD R0,R0,R3
+    SUBS R5,R5,#1
+    CMP R5,#0
+    BNE LOOP1
+
+    LDR R4,=RESULT1
+    STR R0,[R4]
+
+JMP
+    B JMP
+
+VALUE1
+    DCW 0X1111
+    DCW 0X2222
+    DCW 0X3333
+    DCW 0XAAAA
+    DCW 0XBBBB
+    DCW 0XCCCC
+
+AREA DATA1, DATA, READWRITE
+
+RESULT1 DCD 0X0
+
+END
+
+
+/*========================================================
+5) SQUARE OF NUMBER USING LOOKUP TABLE
+========================================================*/
+
+AREA SQUARE, CODE, READONLY
+ENTRY
+
+START3
+    LDR R0,=TABLE1
+    LDR R1,=8
+
+    MOV R1,R1,LSL #2
+    ADD R0,R0,R1
+    LDR R3,[R0]
+
+    NOP
+    NOP
+    NOP
+
+TABLE1
+    DCD 0X00000000
+    DCD 0X00000001
+    DCD 0X00000004
+    DCD 0X00000009
+    DCD 0X00000010
+    DCD 0X00000019
+    DCD 0X00000024
+    DCD 0X00000031
+    DCD 0X00000040
+    DCD 0X00000051
+    DCD 0X00000064
+
+END
+
+
+/*========================================================
+6) LARGEST / SMALLEST NUMBER IN ARRAY
+========================================================*/
+
+AREA SMALLEST, CODE, READONLY
+ENTRY
+
+START4
+    MOV R5,#6
+    LDR R1,=VALUE2
+    LDR R2,[R1],#4
+
+LOOP2
+    LDR R4,[R1],#4
+    CMP R2,R4
+
+    BLS NEXT
+    MOV R2,R4
+
+NEXT
+    SUBS R5,R5,#1
+    CMP R5,#0
+    BNE LOOP2
+
+    LDR R4,=RESULT2
+    STR R2,[R4]
+
+    NOP
+    NOP
+    NOP
+
+VALUE2
+    DCD 0X44444444
+    DCD 0X22222222
+    DCD 0X11111111
+    DCD 0X33333333
+    DCD 0XAAAAAAAA
+    DCD 0X88888888
+    DCD 0X99999999
+
+AREA DATA2, DATA, READWRITE
+
+RESULT2 DCD 0X0
+
+END
+
+
+/*========================================================
+7) DISPLAY "HELLO WORLD" USING UART
+========================================================*/
+
+#include <LPC213X.H>
+#include <stdint.h>
+
+void UART0_init(void)
+{
+    PINSEL0 = PINSEL0 | 0x00000005;
+
+    U0LCR = 0x83;
+    U0DLM = 0x00;
+    U0DLL = 0x61;
+    U0LCR = 0x03;
+}
+
+unsigned char UART0_RxChar(void)
+{
+    while((U0LSR & 0x01) == 0);
+    return U0RBR;
+}
+
+void UART0_TxChar(char ch)
+{
+    U0THR = ch;
+    while((U0LSR & 0x60) == 0);
+}
+
+void UART0_SendString(char *p)
+{
+    char c;
+
+    while(*p != '\0')
+    {
+        c = *p;
+        p++;
+        UART0_TxChar(c);
+    }
+}
+
+int main(void)
+{
+    char receive;
+
+    UART0_init();
+
+    while(1)
+    {
+        receive = UART0_RxChar();
+
+        UART0_SendString("Received : ");
+        UART0_TxChar(receive);
+        UART0_SendString("\r\n");
+    }
+}
+
+
+/*========================================================
+8) STEPPER MOTOR CLOCKWISE & ANTICLOCKWISE
+========================================================*/
+
+#include <LPC21xx.H>
+
+void clock_wise(void);
+void anti_clock_wise(void);
+
+unsigned long int var1,var2;
+unsigned int i=0,j=0,k=0;
+
+int main(void)
+{
+    PINSEL0 = 0x00FFFFFF;
+    IO0DIR |= 0x0000F000;
+
+    while(1)
+    {
+        for(j=0;j<50;j++)
+            clock_wise();
+
+        for(k=0;k<65000;k++);
+
+        for(j=0;j<50;j++)
+            anti_clock_wise();
+
+        for(k=0;k<65000;k++);
+    }
+}
+
+void clock_wise(void)
+{
+    var1 = 0x00000800;
+
+    for(i=0;i<=3;i++)
+    {
+        var1 = var1 << 1;
+        var2 = ~var1;
+        var2 = var2 & 0x0000F000;
+
+        IO0PIN = ~var2;
+
+        for(k=0;k<3000;k++);
+    }
+}
+
+void anti_clock_wise(void)
+{
+    var1 = 0x00010000;
+
+    for(i=0;i<=3;i++)
+    {
+        var1 = var1 >> 1;
+        var2 = ~var1;
+        var2 = var2 & 0x0000F000;
+
+        IO0PIN = ~var2;
+
+        for(k=0;k<3000;k++);
+    }
+}
+
+
+/*========================================================
+9) DISPLAY HEX DIGITS 0 TO F ON 7 SEGMENT
+========================================================*/
+
+#include <LPC21XX.h>
+
+unsigned int delay;
+unsigned int Switchcount=0;
+
+unsigned int Disp[16]={
+0x003F0000,0x00060000,0x005B0000,0x004F0000,
+0x00660000,0x006D0000,0x007D0000,0x00070000,
+0x007F0000,0x006F0000,0x00770000,0x007C0000,
+0x00390000,0x005E0000,0x00790000,0x00710000
+};
+
+#define SELDISP1 0x10000000
+#define SELDISP2 0x20000000
+#define SELDISP3 0x40000000
+#define SELDISP4 0x80000000
+#define ALLDISP  0xF0000000
+#define DATAPORT 0x00FF0000
+
+int main(void)
+{
+    PINSEL0 = 0x00000000;
+    PINSEL1 = 0x00000000;
+
+    IO0DIR = 0xF0FF0000;
+    IO1DIR = 0x00000000;
+
+    while(1)
+    {
+        IO0SET |= ALLDISP;
+        IO0CLR = 0x00FF0000;
+
+        IO0SET = Disp[Switchcount];
+
+        if(!(IO1PIN & 0x00800000))
+        {
+            for(delay=0;delay<100000;delay++);
+
+            if((IO1PIN & 0x00800000))
+            {
+                Switchcount++;
+
+                if(Switchcount == 0x10)
+                {
+                    Switchcount = 0;
+                    IO0CLR = 0xF0FF0000;
+                }
+            }
+        }
+    }
+}
+
+
+/*========================================================
+10) 4x4 KEYBOARD INTERFACE WITH LCD
+========================================================*/
+
+#include <lpc21xx.h>
+#include <stdio.h>
+
+void lcd_init(void);
+void clr_disp(void);
+void lcd_com(void);
+void lcd_data(void);
+void wr_cn(void);
+void wr_dn(void);
+void scan(void);
+void get_key(void);
+void display(void);
+void delay(unsigned int);
+void init_port(void);
+
+unsigned long int scan_code[16]={
+0x00EE0000,0x00ED0000,0x00EB0000,0x00E70000,
+0x00DE0000,0x00DD0000,0x00DB0000,0x00D70000,
+0x00BE0000,0x00BD0000,0x00BB0000,0x00B70000,
+0x007E0000,0x007D0000,0x007B0000,0x00770000
+};
+
+unsigned char ASCII_CODE[16]={
+'0','1','2','3',
+'4','5','6','7',
+'8','9','A','B',
+'C','D','E','F'
+};
+
+unsigned char row,col;
+unsigned char temp,flag,i,result,temp1;
+unsigned int r,r1;
+unsigned long int var,var1,var2,res1,temp2,temp3,temp4;
+
+unsigned char *ptr,disp[] = "4X4 KEYPAD";
+unsigned char disp0[] = "KEYPAD TESTING";
+unsigned char disp1[] = "KEY = ";
+
+int main()
+{
+    init_port();
+
+    delay(3200);
+
+    lcd_init();
+
+    delay(3200);
+
+    clr_disp();
+
+    delay(500);
+
+    ptr = disp;
+
+    temp1 = 0x81;
+
+    lcd_com();
+
+    delay(800);
+
+    while(*ptr!='\0')
+    {
+        temp1 = *ptr;
+        lcd_data();
+        ptr++;
+    }
+
+    while(1)
+    {
+        get_key();
+        display();
+    }
+}
+
+void get_key(void)
+{
+    unsigned int i;
+
+    flag = 0x00;
+
+    IO1PIN=0x000f0000;
+
+    while(1)
+    {
+        for(row=0X00;row<0X04;row++)
+        {
+            if(row == 0X00)
+                temp3=0x00700000;
+
+            else if(row == 0X01)
+                temp3=0x00B00000;
+
+            else if(row == 0X02)
+                temp3=0x00D00000;
+
+            else if(row == 0X03)
+                temp3=0x00E00000;
+
+            var1 = temp3;
+
+            IO1PIN = var1;
+
+            IO1CLR =~var1;
+
+            scan();
+
+            delay(100);
+
+            if(flag == 0xff)
+                break;
+        }
+
+        if(flag == 0xff)
+            break;
+    }
+
+    for(i=0;i<16;i++)
+    {
+        if(scan_code[i] == res1)
+        {
+            result = ASCII_CODE[i];
+            break;
+        }
+    }
+}
+
+void scan(void)
+{
+    unsigned long int t;
+
+    temp2 = IO1PIN;
+
+    temp2 = temp2 & 0x000F0000;
+
+    if(temp2 != 0x000F0000)
+    {
+        delay(1000);
+
+        temp2 = IO1PIN;
+
+        temp2 = temp2 & 0x000F0000;
+
+        if(temp2 != 0x000F0000)
+        {
+            flag = 0xff;
+
+            res1 = temp2;
+
+            t = (temp3 & 0x00F00000);
+
+            res1 = res1 | t;
+        }
+
+        else
+        {
+            flag = 0x00;
+        }
+    }
+}
+
+void display(void)
+{
+    ptr = disp0;
+
+    temp1 = 0x80;
+
+    lcd_com();
+
+    while(*ptr!='\0')
+    {
+        temp1 = *ptr;
+        lcd_data();
+        ptr++;
+    }
+
+    ptr = disp1;
+
+    temp1 = 0xC0;
+
+    lcd_com();
+
+    while(*ptr!='\0')
+    {
+        temp1 = *ptr;
+        lcd_data();
+        ptr++;
+    }
+
+    temp1 = 0xC6;
+
+    lcd_com();
+
+    temp1 = result;
+
+    lcd_data();
+}
+
+void lcd_init(void)
+{
+    temp = 0x30;
+    wr_cn();
+    delay(3200);
+
+    temp = 0x30;
+    wr_cn();
+    delay(3200);
+
+    temp = 0x30;
+    wr_cn();
+    delay(3200);
+
+    temp = 0x20;
+    wr_cn();
+    delay(3200);
+
+    temp = 0x28;
+    lcd_com();
+    delay(3200);
+
+    temp1 = 0x0C;
+    lcd_com();
+    delay(800);
+
+    temp1 = 0x06;
+    lcd_com();
+    delay(800);
+
+    temp1 = 0x80;
+    lcd_com();
+    delay(800);
+}
+
+void lcd_data(void)
+{
+    temp = temp1 & 0xf0;
+
+    wr_dn();
+
+    temp = temp1 & 0x0f;
+
+    temp = temp << 4;
+
+    wr_dn();
+
+    delay(100);
+}
+
+void wr_dn(void)
+{
+    IO0CLR = 0x000000FC;
+
+    IO0SET = temp;
+
+    IO0SET = 0x00000004;
+
+    IO0SET = 0x00000008;
+
+    delay(10);
+
+    IO0CLR = 0x00000008;
+}
+
+void lcd_com(void)
+{
+    temp = temp1 & 0xf0;
+
+    wr_cn();
+
+    temp = temp1 & 0x0f;
+
+    temp = temp << 4;
+
+    wr_cn();
+
+    delay(500);
+}
+
+void wr_cn(void)
+{
+    IO0CLR = 0x000000FC;
+
+    IO0SET = temp;
+
+    IO0CLR = 0x00000004;
+
+    IO0SET = 0x00000008;
+
+    delay(10);
+
+    IO0CLR = 0x00000008;
+}
+
+void clr_disp(void)
+{
+    temp1 = 0x01;
+
+    lcd_com();
+
+    delay(500);
+}
+
+void delay(unsigned int r1)
+{
+    for(r=0;r<r1;r++);
+}
+
+void init_port()
+{
+    IO0DIR = 0x000000FC;
+    IO1DIR = 0XFFF0FFFF;
+}
