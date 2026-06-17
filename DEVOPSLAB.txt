@@ -1,0 +1,227 @@
+PROGRAM 2 
+----------------
+mvn archetype:generate
+-DgroupId = com.example
+-DartifactId = myapp
+-DarchetypeArtifactId = maven-archetype-quickstart
+-DinteractiveMode = false
+
+Open the file in IntelliJ
+Add App.java
+
+public class App
+{
+public int add(int a,int b)
+{
+return a+b;
+}
+public static void main(String args[])
+{
+App app = new App();
+
+int result = app.add(2,3);
+Sout("2+3="+result);
+}
+}
+
+
+Add test file
+
+public class AppTest
+{
+@test
+public void testAdd()
+{
+App app = new App();
+int result = app.add(2,3);
+sout("Running test : 2+3= "+result);
+Assert.assertEquals(5,result);
+}
+}
+
+
+PROGRAM 3
+--------------
+
+gradle init --type java-application
+
+build.gradle
+
+
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.5.4'
+}
+
+task customTask {
+    doLast {
+        println 'This is a custom task'
+    }
+}
+
+TestClass : 
+public class AdditionOperationTest {
+
+    @Test
+    public void testAddition() {
+        double num1 = 5;
+        double num2 = 10;
+        double expectedSum = num1 + num2;
+
+        double actualSum = num1 + num2;
+
+        assertEquals(expectedSum, actualSum, 0.01);
+    }
+}
+
+gradle build
+gradle run
+gradle test
+
+PROGRAM 4
+-----------
+mvn archetype:generate -DgroupId=com.example -DartifactId=myapp -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+
+mvn clean install
+mvn exec:java -Dexec.mainClass="com.example.myapp"
+
+gradle init
+
+plugins {
+    id 'java'
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.12'
+}
+
+task run(type: JavaExec) {
+    main = 'com.example.App'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+gradlew build
+gradlew run
+
+PROGRAM 6 
+----------
+
+open web browser
+go to localhost:8080
+
+create new job > new item > Enter item name 'maven-ci' > select freestyle > OK
+Configure SCM : Select Git > Enter repo details 
+
+Add maven build step 
+
+Scroll down to build and click on add build step
+Select Invoke top level maven targets
+In goal field : clean package
+
+Pom : myapp/pom.xml
+
+Save > Build Now > Build success
+
+
+CI Pipeline
+
+New item > Pipeline script >
+Enter script
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/suyash3312/JENKINS.git'
+            }
+        }
+
+        stage('Build') {
+    steps {
+        dir('myapp01') {
+            bat 'mvn clean package'
+        }
+    }
+}
+
+stage('Test') {
+    steps {
+        dir('myapp01') {
+            bat 'mvn test'
+        }
+    }
+}
+    }
+
+    post {
+        always {
+            junit '**/target/surefire-reports/*.xml'
+        }
+
+        success {
+            echo 'Build and tests succeeded!'
+        }
+
+        failure {
+            echo 'Build or tests failed.'
+        }
+    }
+}
+
+Save
+
+Trigger build by clicking Build Now
+Verify and confirm
+
+PROGRAM 7
+------------
+Wsl 
+sudo apt update
+sudo apt install ansible -y
+
+ansible --version
+mkdir ansible-demo
+cd ansible-demo
+
+nano hosts
+
+[local]
+localhost ansible_connection=local
+
+Ctrl+x Y Enter
+
+ansible all -i inventory -m ping
+
+nano instal_nginx.yml
+
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: Install Apache Web Server
+      apt:
+        name: apache2
+        state: present
+
+ansible=playbook -i hosts install_nginx.yml
+
+open localhost
+
+curl http:localhost
